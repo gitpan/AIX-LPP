@@ -1,0 +1,11 @@
+Changes
+MANIFEST
+MANIFEST.bak
+Makefile.PL
+TODO
+data/lpp_name
+LPP/lpp_name.pm
+t/0.t
+t/1.t
+t/2.t
+t/3.t
