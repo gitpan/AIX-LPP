@@ -1,10 +1,11 @@
 Changes
+LPP/lpp_name.pm
 MANIFEST
-MANIFEST.bak
 Makefile.PL
+README
 TODO
 data/lpp_name
-LPP/lpp_name.pm
+scripts/mkcontrol
 t/0.t
 t/1.t
 t/2.t

@@ -4,7 +4,7 @@ require 5.005_62;
 use strict;
 use warnings;
 
-our $VERSION = '0.4';
+our $VERSION = '0.5';
 
 sub new {
     my $class = shift;
@@ -26,13 +26,15 @@ sub new {
 
 sub lpp {
     my $self = shift;
-    return ( $self->{NAME},$self->{TYPE},$self->{FORMAT},$self->{PLATFORM}) unless @_;
+    return ( $self->{NAME},$self->{TYPE},$self->{FORMAT},$self->{PLATFORM},
+	keys %{$self->{FILESET}} ) unless @_;
     my %param = @_;
     if (defined $param{FORMAT}) { $self->{FORMAT} = $param{FORMAT}}
     if (defined $param{PLATFORM}) { $self->{PLATFORM} = $param{PLATFORM}}
     if (defined $param{TYPE}) { $self->{TYPE} = $param{TYPE}}
     if (defined $param{NAME}) { $self->{NAME} = $param{NAME}}
-    return ( $self->{NAME},$self->{TYPE},$self->{FORMAT},$self->{PLATFORM});
+    return ( $self->{NAME},$self->{TYPE},$self->{FORMAT},$self->{PLATFORM},
+	keys %{$self->{FILESET}} );
 }
 
 sub fileset {
@@ -77,8 +79,9 @@ sub fileset {
 sub sizeinfo {
     my $self = shift;
     my $fset = shift;
-    my $parm_ref = shift;
+    my $size_ref = shift;
 
+    $self->{FILESET}{$fset}{SIZEINFO} = $size_ref;
     return $self->{FILESET}{$fset}{SIZEINFO};
 }
 
@@ -88,7 +91,7 @@ sub requisites {
     my $ref_req = shift;
 
     $self->{FILESET}{$fset}{REQ} = $ref_req;
-    return @{$self->{FILESET}{$fset}{REQ}};
+    return $self->{FILESET}{$fset}{REQ};
 }
 
 sub validate {
@@ -195,12 +198,23 @@ AIX::LPP::lpp_name - Perl module for manipulation of an AIX lpp_name file
   use AIX::LPP::lpp_name;
 
   $x = lpp_name->new();
-  $x->fileset();
+  $x->lpp(NAME => 'test.lpp',TYPE => 'I',PLATFORM => 'R',FORMAT => '4');
+  $x->fileset('test.lpp.rte', VRMF => '1.0.0.0',DISK => '01',BOSBOOT => 'N',
+	CONTENT => 'I', LANG => 'en_US', DESCRIPTION => 'test.lpp description',
+	COMMENTS => '');
+  my @reqs = [ ['*prereq','bos.rte','4.3.3.0'] ];
+  $x->requisites('test.lpp.rte', \@reqs);
+  my %sizes = { '/usr' => '5', '/etc' => '1' };
+  $x->sizeinfo('test.lpp.rte', \%sizes);
   $x->write(\*out_fh);
 
   or
 
   $x = lpp_name->read(\*in_fh);
+  my %lppdata = $x->lpp();
+  my %fsdata = $x->fileset('test.lpp.rte');
+  my $req_ref = $x->requisites('test.lpp.rte');
+  my $size_ref = $x->sizeinfo('test.lpp.rte');
   
 =head1 DESCRIPTION
 
@@ -234,13 +248,17 @@ method (or it will be when I'm finished).
 
 =item fileset()
 
-=item validate()
+=item requisites()
 
-Not yet implemented.
+=item sizeinfo()
 
 =item read()
 
 =item write()
+
+=item validate()
+
+Not yet implemented.
 
 =back
 
@@ -250,4 +268,4 @@ Charles Ritter, critter@aixadm.org
 
 =head1 SEE ALSO
 
-The installp manpage.
+The installp manpage, IBM LPP package format documentation.
